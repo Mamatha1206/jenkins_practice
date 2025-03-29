@@ -1,30 +1,57 @@
 pipeline {
     agent any
+    
+    environment {
+        VENV_DIR = "venv"  // Define the virtual environment directory
+    }
+    
     stages {
         stage('Clone Repository') {
             steps {
                 git (url: 'https://github.com/Mamatha1206/jenkins_practice.git', branch:'main')
             }
         }
+        
+        stage('Setup Python Virtual Environment') {
+            steps {
+                sh 'python3 -m venv $VENV_DIR'
+                sh 'source $VENV_DIR/bin/activate'
+            }
+        }
+        
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '$VENV_DIR/bin/pip install --upgrade pip'
+                sh '$VENV_DIR/bin/pip install -r requirements.txt'
             }
         }
+        
         stage('Run Tests') {
             steps {
-                sh 'pytest tests/'
+                sh '$VENV_DIR/bin/pytest tests/'
             }
         }
+        
         stage('Build Artifacts') {
             steps {
-                sh 'python setup.py bdist_wheel'
+                sh '$VENV_DIR/bin/python setup.py bdist_wheel'
             }
         }
+        
         stage('Archive Artifacts') {
             steps {
                 archiveArtifacts artifacts: 'dist/*.whl', fingerprint: true
             }
         }
     }
+    
+    post {
+        always {
+            echo "Build process completed!"
+        }
+        failure {
+            echo "Build failed! Check logs for errors."
+        }
+    }
 }
+
