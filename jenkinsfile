@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        VENV_DIR = "venv"  // Define the virtual environment directory
+        VENV_DIR = "venv"
     }
     
     stages {
@@ -14,8 +14,9 @@ pipeline {
         
         stage('Setup Python Virtual Environment') {
             steps {
+                sh 'rm -rf $VENV_DIR'  // Clean old venv
                 sh 'python3 -m venv $VENV_DIR'
-                sh 'source $VENV_DIR/bin/activate'
+                sh '. $VENV_DIR/bin/activate'  // Use '.' instead of 'source'
             }
         }
         
